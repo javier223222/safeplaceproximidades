@@ -1,5 +1,6 @@
 import mqtt from "mqtt";
 import bcryp from "bcrypt";
+import ProximidadController from "../controller/Proximidad.controller";
 
 export default (io:any,socket:any)=>{
     const getDataOfSen=async(id:number)=>{
@@ -9,7 +10,7 @@ export default (io:any,socket:any)=>{
         const mqttOptions = {
             clientId: 'mqttjs_' + bcryp.hashSync(Math.random().toString(16),10),
             username: "", // usuario MQTT
-            password: "", //  contraseña MQTT
+            passowrd: "", //  contraseña MQTT
         };
         // todo implementar petecion a prodcuto par actualizar su rango
         const topic="safeplace/"+id+"/ultrasonic"
@@ -34,7 +35,20 @@ export default (io:any,socket:any)=>{
           
     }
 
+    const updateDataOfSen=async(id:any,range:any)=>{
+        const proximida=new ProximidadController()
+        
+        const data=await proximida.updateproximidad({
+            id:parseInt(id as string),
+            range:range
+        })
+
+        io.of("/proximidad").to(id).emit("getproximidad:newvalue",data)
+    }
+
     socket.on("getproximidad:getdata",getDataOfSen)
+    socket.on("getproximidad:updatedata",updateDataOfSen)
+
     // socket.on("joinRoom",(idRoom:any,usuario:any) => {
     //     socket.join(idRoom)
     //    console.log("usuario",idRoom)
